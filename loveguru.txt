@@ -1,0 +1,47 @@
+# code for the prompt generation  and response using the gemini 
+from openai import OpenAI
+import gradio as gr
+import os
+
+# Step 1: Setup Gemini (Google AI) API key and base URL
+# It's better to use environment variables for API keys
+api_key = os.getenv("GEMINI_API_KEY", "AIzaSyDZjyc-P0o1BBdEJXUNmoUDubQDWKyUfCI")
+
+gemini_model = OpenAI(
+    api_key=api_key,  # Removed extra quotes
+    base_url="https://generativelanguage.googleapis.com/v1beta2/openai/"
+)
+
+# Step 2: Define the love guru response function
+def lovegurulm(myprompt):
+    try:
+        mymsg = [
+            {"role": "system", "content": "You are an AI assistant who works like a love guru. Reply in just 2 lines, make it romantic, and help the user feel better."},
+            {"role": "user", "content": myprompt}
+        ]
+        
+        response = gemini_model.chat.completions.create(
+            model="gemini-1.5-flash",  # Corrected model name
+            messages=mymsg
+        )
+        content = response.choices[0].message.content
+        if content:
+            return content.strip()
+        else:
+            return "Sorry, I couldn't process your request. No content returned."
+    
+    except Exception as e:
+        return f"Sorry, I couldn't process your request. Error: {str(e)}"
+
+# Step 3: Create the Gradio interface
+iface = gr.Interface(
+    fn=lovegurulm,
+    inputs=gr.Textbox(label="Tell me about your love situation", placeholder="What's on your heart?"),
+    outputs=gr.Textbox(label="Love Guru's Advice"),
+    title=" Love Guru AI ",
+    description="Get romantic advice from the Love Guru AI. Share your heart and receive wisdom!",
+    theme="soft"
+)
+
+# Step 4: Launch the interface
+iface.launch(share=True)  # Set s
